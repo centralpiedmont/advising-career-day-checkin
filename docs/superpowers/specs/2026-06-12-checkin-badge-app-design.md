@@ -31,7 +31,7 @@ name badge via AirPrint to a label printer. Companion to the signage system in
 
 ## Screens / flow
 
-1. **Welcome** — full-screen brand panel, event title, "Powering a stronger future.",
+1. **Welcome** — full-screen brand panel, event title, "Conquer Possibility" tagline,
    big "Tap to Check In" CTA. Tapping anywhere advances.
 2. **Form** — Name (required), Email (required, validated), program chips
    (multi-select, at least 1). Continue → preview.
