@@ -44,11 +44,11 @@ name badge via AirPrint to a label printer. Companion to the signage system in
 
 ## Badge (3 × 2 in landscape)
 
-- White card. Top band in the **track color of the first selected program**
-  (Blue/Gold/Gray — matches door signs so volunteers can route students at a glance).
-  Band text follows brand contrast rules: white on blue/gray, dark on gold.
+- **Monochrome** — badges print on white thermal label stock, so the layout is
+  ink-only (revised 2026-06-12: track-color band dropped per Frazier).
+  Dark header band with "Central Piedmont" + event name.
 - Large auto-sizing first name; full name beneath; up to 3 interests in small text;
-  2pt gold rule; footer "Central Piedmont · Advising & Career Day".
+  2pt dark rule above the interests line.
 - Typography only (no raster logo at this size). Font stack:
   "Franklin Gothic", Arial, Roboto, sans-serif per brand.
 
