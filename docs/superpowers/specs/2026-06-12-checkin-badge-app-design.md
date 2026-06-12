@@ -47,7 +47,8 @@ name badge via AirPrint to a label printer. Companion to the signage system in
 - **Monochrome** — badges print on white thermal label stock, so the layout is
   ink-only (revised 2026-06-12: track-color band dropped per Frazier).
   Dark header band with "Central Piedmont" + event name.
-- Large auto-sizing first name; full name beneath; up to 3 interests in small text;
+- Large auto-sizing first name; full name beneath; **all** selected interests in a
+  wrapping line that auto-shrinks until everything fits (revised 2026-06-12);
   2pt dark rule above the interests line.
 - Typography only (no raster logo at this size). Font stack:
   "Franklin Gothic", Arial, Roboto, sans-serif per brand.
