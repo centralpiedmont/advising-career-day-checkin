@@ -50,8 +50,9 @@ name badge via AirPrint to a label printer. Companion to the signage system in
 - Large auto-sizing first name; full name beneath; **all** selected interests in a
   wrapping line that auto-shrinks until everything fits (revised 2026-06-12);
   2pt dark rule above the interests line.
-- Typography only (no raster logo at this size). Font stack:
-  "Franklin Gothic", Arial, Roboto, sans-serif per brand.
+- Official horizontal logo (reversed white, inlined as a data URI) in the header
+  band, since blank label stock carries no branding (revised 2026-06-12).
+  Font stack: "Franklin Gothic", Arial, Roboto, sans-serif per brand.
 
 ## Data model
 
