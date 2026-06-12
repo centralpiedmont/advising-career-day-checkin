@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Check-In">
+<meta name="theme-color" content="#54565A">
+<link rel="apple-touch-icon" href="icon.png">
+<title>Check-In · Business &amp; Technology Advising and Career Day</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,300;0,400;0,500;0,600;0,700;0,900;1,400&display=swap" rel="stylesheet">
+<style>
+/* ============ Central Piedmont brand tokens ============ */
+:root{
+  --gray:#54565A; --gray-75:#7F8184; --gray-50:#A9AAAC; --gray-25:#D4D5D6; --gray-10:#EEEEEF;
+  --gold:#B4A269; --gold-75:#C7B98F; --gold-50:#D9D0B4; --gold-25:#ECE8D9;
+  --blue:#005D83; --blue-dark:#004A69;
+  --ink:#2E2F31; --paper:#FBFAF7;
+  --track-tech:var(--blue); --track-business:var(--gold); --track-acct:var(--gray);
+  --franklin:"Libre Franklin","Franklin Gothic",Arial,Roboto,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:var(--franklin); color:var(--ink); background:var(--paper);
+  overflow:hidden; -webkit-user-select:none; user-select:none;
+  -webkit-text-size-adjust:100%;
+}
+
+/* ============ screen plumbing ============ */
+.screen{position:fixed; inset:0; display:none; flex-direction:column; overflow:hidden}
+.screen.active{display:flex}
+
+/* faint brand texture used on light screens */
+.texture{
+  background:
+    radial-gradient(1100px 500px at 85% -10%, rgba(180,162,105,.14), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(0,93,131,.07), transparent 55%),
+    var(--paper);
+}
+
+/* ============ WELCOME ============ */
+#welcome{background:var(--gray); color:#fff; cursor:pointer}
+#welcome::before{ /* oversized gold mark-like arcs */
+  content:""; position:absolute; right:-22vmin; top:-22vmin; width:64vmin; height:64vmin;
+  border:2.5vmin solid rgba(180,162,105,.28); border-radius:50%;
+}
+#welcome::after{
+  content:""; position:absolute; right:-10vmin; top:-10vmin; width:40vmin; height:40vmin;
+  border:1.4vmin solid rgba(180,162,105,.5); border-radius:50%;
+}
+.w-inner{position:relative; z-index:2; flex:1; display:flex; flex-direction:column;
+  justify-content:center; padding:0 9vw; gap:0}
+.w-eyebrow{font-size:clamp(14px,1.9vw,22px); letter-spacing:.32em; text-transform:uppercase;
+  color:var(--gold); font-weight:600; animation:rise .7s ease both}
+.w-title{font-weight:900; font-size:clamp(44px,8.4vw,118px); line-height:.98; margin:.25em 0 .12em;
+  animation:rise .7s .08s ease both}
+.w-title em{font-style:normal; color:var(--gold)}
+.w-sub{font-size:clamp(17px,2.3vw,27px); font-weight:300; color:var(--gray-25);
+  animation:rise .7s .16s ease both}
+.w-rule{width:6.5em; height:3px; background:var(--gold); margin:2.2em 0; animation:grow .8s .25s ease both; transform-origin:left}
+.w-cta{display:inline-flex; align-items:center; gap:.7em; align-self:flex-start;
+  background:var(--blue); color:#fff; border:none; font:inherit; font-weight:600;
+  font-size:clamp(19px,2.5vw,29px); padding:.85em 1.7em; border-radius:14px; cursor:pointer;
+  box-shadow:0 12px 34px rgba(0,0,0,.35); animation:rise .7s .3s ease both}
+.w-cta .arrow{transition:transform .25s}
+#welcome:active .w-cta .arrow{transform:translateX(6px)}
+.w-pulse{position:absolute; inset:0; border-radius:14px; box-shadow:0 0 0 0 rgba(0,93,131,.55); animation:pulse 2.6s 1.4s infinite}
+.w-cta{position:relative}
+.w-foot{position:relative; z-index:2; display:flex; justify-content:space-between; align-items:center;
+  padding:0 9vw 4.5vh; color:var(--gray-50); font-size:clamp(12px,1.4vw,16px); letter-spacing:.06em}
+.w-foot b{color:var(--gold); font-weight:600}
+#adminBtn{background:none; border:none; color:var(--gray-75); font-size:22px; cursor:pointer; padding:10px; opacity:.55}
+@keyframes rise{from{opacity:0; transform:translateY(26px)} to{opacity:1; transform:none}}
+@keyframes grow{from{transform:scaleX(0)} to{transform:scaleX(1)}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,93,131,.5)} 70%{box-shadow:0 0 0 22px rgba(0,93,131,0)} 100%{box-shadow:0 0 0 0 rgba(0,93,131,0)}}
+
+/* ============ shared chrome for form/preview/admin ============ */
+.bar{background:var(--gray); color:#fff; display:flex; align-items:center; gap:18px;
+  padding:calc(env(safe-area-inset-top, 0px) + 16px) 34px 16px}
+.bar .crumb{font-size:13px; letter-spacing:.28em; text-transform:uppercase; color:var(--gold); font-weight:600}
+.bar h2{font-size:21px; font-weight:700; letter-spacing:.01em}
+.bar .spacer{flex:1}
+.goldline{height:3px; background:linear-gradient(90deg,var(--gold) 0 62%, var(--gold-50) 62% 100%)}
+.btn{font:inherit; border:none; border-radius:12px; cursor:pointer; font-weight:600; transition:transform .12s, box-shadow .12s}
+.btn:active{transform:scale(.97)}
+.btn-blue{background:var(--blue); color:#fff; padding:16px 34px; font-size:20px; box-shadow:0 8px 22px rgba(0,93,131,.3)}
+.btn-ghost{background:none; color:var(--gray); padding:14px 22px; font-size:17px; border:2px solid var(--gray-25)}
+.btn-gold{background:var(--gold); color:#1A1A1A; padding:14px 26px; font-size:17px}
+.btn[disabled]{opacity:.4; pointer-events:none}
+
+/* ============ FORM ============ */
+#form .body{flex:1; overflow:auto; -webkit-overflow-scrolling:touch; padding:34px 6vw 130px}
+.fgrid{display:grid; grid-template-columns:1fr 1fr; gap:26px; max-width:1080px; margin:0 auto}
+.field label{display:block; font-size:14px; letter-spacing:.18em; text-transform:uppercase;
+  font-weight:600; color:var(--blue); margin-bottom:9px}
+.field input{width:100%; font:inherit; font-size:24px; font-weight:500; color:var(--ink);
+  background:#fff; border:2px solid var(--gray-25); border-radius:12px; padding:16px 18px;
+  -webkit-user-select:text; user-select:text}
+.field input:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 4px rgba(0,93,131,.12)}
+.field .err{color:#8A2432; font-size:14px; margin-top:7px; min-height:18px; font-weight:500}
+.progs{max-width:1080px; margin:34px auto 0}
+.progs>.plabel{font-size:14px; letter-spacing:.18em; text-transform:uppercase; font-weight:600; color:var(--blue)}
+.progs>.phint{font-size:15px; color:var(--gray-75); margin:4px 0 18px}
+.track{margin-bottom:22px}
+.track h3{display:flex; align-items:center; gap:12px; font-size:15px; letter-spacing:.22em;
+  text-transform:uppercase; font-weight:700; margin-bottom:12px}
+.track h3 .dot{width:14px; height:14px; border-radius:4px}
+.track[data-track="tech"] h3{color:var(--blue)} .track[data-track="tech"] .dot{background:var(--blue)}
+.track[data-track="business"] h3{color:#8d7c46} .track[data-track="business"] .dot{background:var(--gold)}
+.track[data-track="acct"] h3{color:var(--gray)} .track[data-track="acct"] .dot{background:var(--gray)}
+.chips{display:flex; flex-wrap:wrap; gap:12px}
+.chip{font:inherit; font-size:17.5px; font-weight:500; padding:13px 22px; border-radius:999px;
+  background:#fff; border:2px solid var(--gray-25); color:var(--ink); cursor:pointer;
+  transition:all .15s}
+.chip:active{transform:scale(.96)}
+.chip.on{color:#fff; font-weight:600}
+.track[data-track="tech"] .chip.on{background:var(--blue); border-color:var(--blue)}
+.track[data-track="business"] .chip.on{background:var(--gold); border-color:var(--gold); color:#1A1A1A}
+.track[data-track="acct"] .chip.on{background:var(--gray); border-color:var(--gray)}
+.formfoot{position:fixed; left:0; right:0; bottom:0; display:flex; gap:16px; align-items:center;
+  padding:18px 6vw calc(env(safe-area-inset-bottom, 0px) + 18px);
+  background:rgba(251,250,247,.92); backdrop-filter:blur(12px); border-top:2px solid var(--gold);}
+.formfoot .count{font-size:15px; color:var(--gray-75)}
+.formfoot .spacer{flex:1}
+
+/* ============ PREVIEW ============ */
+#preview .body{flex:1; display:flex; align-items:center; justify-content:center; gap:6vw;
+  padding:30px 6vw; flex-wrap:wrap; overflow:auto}
+.badge-stage{filter:drop-shadow(0 24px 48px rgba(46,47,49,.28)); animation:rise .5s ease both}
+.preview-side{max-width:420px; animation:rise .5s .08s ease both}
+.preview-side h3{font-size:30px; font-weight:800; margin-bottom:10px}
+.preview-side p{font-size:17px; color:var(--gray-75); line-height:1.55; margin-bottom:28px}
+.preview-side .stack{display:flex; flex-direction:column; gap:14px}
+.preview-side .btn-blue{font-size:23px; padding:19px 38px}
+
+/* ============ the badge (screen preview + print) ============ */
+/* True size 3in × 2in. On screen we render at 2.2× via transform on .badge-stage */
+.badge{
+  width:3in; height:2in; background:#fff; overflow:hidden; position:relative;
+  display:flex; flex-direction:column; font-family:var(--franklin);
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;
+}
+.badge-stage .badge{transform:scale(2.2); transform-origin:center; margin:1.3in 1.95in}
+.b-band{height:.42in; display:flex; align-items:center; justify-content:space-between;
+  padding:0 .16in; flex:none}
+.b-band .b-school{font-size:9.5pt; font-weight:700; letter-spacing:.06em}
+.b-band .b-ev{font-size:5.6pt; font-weight:600; letter-spacing:.14em; text-transform:uppercase; text-align:right; line-height:1.45}
+.badge[data-track="tech"] .b-band{background:var(--blue); color:#fff}
+.badge[data-track="business"] .b-band{background:var(--gold); color:#1A1A1A}
+.badge[data-track="acct"] .b-band{background:var(--gray); color:#fff}
+.b-main{flex:1; display:flex; flex-direction:column; justify-content:center; padding:0 .16in; min-height:0}
+.b-hello{font-size:6pt; letter-spacing:.26em; text-transform:uppercase; color:var(--gold); font-weight:700; margin-bottom:.02in}
+.b-first{font-weight:900; line-height:.95; color:var(--ink); white-space:nowrap}
+.b-last{font-size:10pt; font-weight:500; color:var(--gray); margin-top:.03in; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.b-foot{flex:none; padding:0 .16in .09in}
+.b-rule{height:2pt; background:var(--gold); margin-bottom:.05in}
+.b-int{font-size:6.4pt; line-height:1.5; color:var(--gray); font-weight:500;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.b-int b{color:var(--blue); font-weight:700; letter-spacing:.08em; text-transform:uppercase; font-size:5.6pt}
+
+/* ============ ADMIN ============ */
+#admin .body{flex:1; overflow:auto; padding:30px 5vw 60px}
+.stats{display:flex; gap:18px; flex-wrap:wrap; margin-bottom:28px}
+.stat{background:#fff; border:1px solid var(--gray-25); border-top:4px solid var(--gold);
+  border-radius:12px; padding:18px 26px; min-width:150px}
+.stat .n{font-size:38px; font-weight:900; color:var(--blue)}
+.stat .l{font-size:12.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--gray-75); font-weight:600}
+.tag{display:inline-block; background:var(--gold-25); border-radius:999px; padding:5px 13px;
+  font-size:13.5px; font-weight:600; color:var(--ink); margin:0 8px 8px 0}
+.tag .ct{color:var(--blue); font-weight:800}
+table{width:100%; border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden;
+  box-shadow:0 1px 0 var(--gray-25)}
+th{background:var(--gray); color:#fff; text-align:left; font-size:12.5px; letter-spacing:.12em;
+  text-transform:uppercase; padding:13px 16px; font-weight:600}
+td{padding:13px 16px; border-top:1px solid var(--gray-10); font-size:15.5px; vertical-align:top}
+td.mono{color:var(--gray-75); font-size:13.5px; white-space:nowrap}
+.rowbtn{font:inherit; font-size:13.5px; font-weight:600; border:none; cursor:pointer;
+  border-radius:8px; padding:7px 13px; margin-right:6px}
+.rowbtn.print{background:var(--blue); color:#fff}
+.rowbtn.del{background:var(--gray-10); color:#8A2432}
+.empty{padding:60px; text-align:center; color:var(--gray-75); font-size:18px}
+.adminbar{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:28px}
+.dangerzone{margin-top:34px}
+#confirmClear{display:none; gap:12px; align-items:center}
+#confirmClear.show{display:inline-flex}
+#confirmClear span{color:#8A2432; font-weight:600}
+
+/* ============ DONE overlay ============ */
+#done{position:fixed; inset:0; background:var(--blue); color:#fff; display:none;
+  flex-direction:column; align-items:center; justify-content:center; z-index:60; text-align:center; padding:0 8vw}
+#done.show{display:flex; animation:fadein .3s ease}
+#done .check{width:110px; height:110px; border-radius:50%; background:var(--gold); color:#1A1A1A;
+  display:flex; align-items:center; justify-content:center; font-size:58px; margin-bottom:30px;
+  animation:pop .45s cubic-bezier(.2,1.6,.4,1) both}
+#done h2{font-size:clamp(34px,5vw,56px); font-weight:900; margin-bottom:12px}
+#done p{font-size:clamp(17px,2.2vw,23px); color:var(--gold-50); font-weight:300}
+@keyframes pop{from{transform:scale(.3); opacity:0} to{transform:scale(1); opacity:1}}
+@keyframes fadein{from{opacity:0} to{opacity:1}}
+
+.toast{position:fixed; left:50%; bottom:34px; transform:translateX(-50%) translateY(140%);
+  background:var(--ink); color:#fff; padding:14px 26px; border-radius:12px; font-size:16px;
+  z-index:70; transition:transform .3s; max-width:84vw; text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ============ PRINT: only the badge, exact 3×2 ============ */
+#printBadge{position:fixed; left:-9in; top:0}
+@media print{
+  @page{size:3in 2in; margin:0}
+  body{overflow:visible; background:#fff}
+  body>*{display:none !important}
+  #printBadge{display:block !important; position:static; left:0}
+  #printBadge .badge{transform:none; margin:0}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= WELCOME ================= -->
+<section class="screen active" id="welcome">
+  <div class="w-inner">
+    <div class="w-eyebrow">Central Piedmont Community College</div>
+    <h1 class="w-title">Business &amp; Technology<br><em>Advising and Career Day</em></h1>
+    <p class="w-sub">Powering a stronger future.</p>
+    <div class="w-rule"></div>
+    <button class="w-cta" type="button">Tap to Check In <span class="arrow">→</span><span class="w-pulse"></span></button>
+  </div>
+  <div class="w-foot">
+    <span><b>Blue</b> Technology &nbsp;·&nbsp; <b>Gold</b> Business &nbsp;·&nbsp; <b>Gray</b> Accounting</span>
+    <button id="adminBtn" type="button" aria-label="Staff admin">⚙</button>
+  </div>
+</section>
+
+<!-- ================= FORM ================= -->
+<section class="screen texture" id="form">
+  <div class="bar">
+    <span class="crumb">Check-In · Step 1 of 2</span>
+    <span class="spacer"></span>
+    <h2>Tell us about you</h2>
+  </div>
+  <div class="goldline"></div>
+  <div class="body">
+    <div class="fgrid">
+      <div class="field">
+        <label for="inName">Your name</label>
+        <input id="inName" type="text" autocomplete="off" autocapitalize="words" placeholder="First Last">
+        <div class="err" id="errName"></div>
+      </div>
+      <div class="field">
+        <label for="inEmail">Email address</label>
+        <input id="inEmail" type="email" autocomplete="off" autocapitalize="none" placeholder="you@email.cpcc.edu">
+        <div class="err" id="errEmail"></div>
+      </div>
+    </div>
+    <div class="progs">
+      <div class="plabel">Programs of interest</div>
+      <div class="phint">Tap all that apply — your badge color will match your first pick’s area.</div>
+      <div id="trackList"></div>
+      <div class="err" id="errProgs"></div>
+    </div>
+  </div>
+  <div class="formfoot">
+    <button class="btn btn-ghost" type="button" id="backWelcome">← Back</button>
+    <span class="count" id="pickCount"></span>
+    <span class="spacer"></span>
+    <button class="btn btn-blue" type="button" id="toPreview">Preview Badge →</button>
+  </div>
+</section>
+
+<!-- ================= PREVIEW ================= -->
+<section class="screen texture" id="preview">
+  <div class="bar">
+    <span class="crumb">Check-In · Step 2 of 2</span>
+    <span class="spacer"></span>
+    <h2>Your badge</h2>
+  </div>
+  <div class="goldline"></div>
+  <div class="body">
+    <div class="badge-stage"><div class="badge" id="badgePreview"></div></div>
+    <div class="preview-side">
+      <h3>Looking good?</h3>
+      <p>Print your badge, peel it, and wear it. The colored band tells our team which
+         area to point you toward first.</p>
+      <div class="stack">
+        <button class="btn btn-blue" type="button" id="printBtn">Print Badge 🖨</button>
+        <button class="btn btn-ghost" type="button" id="skipPrint">Check in without printing</button>
+        <button class="btn btn-ghost" type="button" id="backForm">← Edit my info</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ADMIN ================= -->
+<section class="screen texture" id="admin">
+  <div class="bar">
+    <span class="crumb">Staff</span>
+    <span class="spacer"></span>
+    <h2>Leads &amp; Export</h2>
+  </div>
+  <div class="goldline"></div>
+  <div class="body">
+    <div class="stats" id="statCards"></div>
+    <div id="progCounts" style="margin-bottom:26px"></div>
+    <div class="adminbar">
+      <button class="btn btn-gold" type="button" id="exportCsv">Export CSV ↓</button>
+      <button class="btn btn-ghost" type="button" id="adminBack">← Back to kiosk</button>
+    </div>
+    <div id="leadTable"></div>
+    <div class="dangerzone">
+      <button class="btn btn-ghost" type="button" id="clearBtn" style="color:#8A2432;border-color:#e6c9ce">Clear all data…</button>
+      <span id="confirmClear">
+        <span>Delete all leads from this iPad?</span>
+        <button class="btn btn-ghost" type="button" id="clearYes" style="color:#8A2432">Yes, delete</button>
+        <button class="btn btn-ghost" type="button" id="clearNo">Cancel</button>
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DONE ================= -->
+<div id="done">
+  <div class="check">✓</div>
+  <h2 id="doneName">You’re checked in!</h2>
+  <p>Enjoy Advising and Career Day — follow your badge color to get started.</p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- print-only badge -->
+<div id="printBadge"><div class="badge" id="badgePrint"></div></div>
+
+<script>
+"use strict";
+/* ============ event configuration ============ */
+const TRACKS = [
+  { id:"tech", label:"Technology", programs:[
+      "Software Engineering","Data Analytics","IT Project Management","Artificial Intelligence",
+      "Cloud & Networking","Cybersecurity","IT Support","Simulation & Game Development"]},
+  { id:"business", label:"Business", programs:[
+      "Business Administration","Medical Office Administration","Paralegal Technologies",
+      "Supply Chain Management"]},
+  { id:"acct", label:"Accounting", programs:["Accounting","Forensic Accounting","University Transfer"]},
+];
+const TRACK_OF = {}; TRACKS.forEach(t => t.programs.forEach(p => TRACK_OF[p] = t.id));
+const STORE_KEY = "acd-leads-2026";
+
+/* ============ state ============ */
+let picked = [];          // ordered program selections
+let pendingLead = null;   // lead being previewed
+
+/* ============ helpers ============ */
+const $ = s => document.querySelector(s);
+function show(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  $(id).classList.add("active");
+}
+let toastT;
+function toast(msg){
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 3200);
+}
+function loadLeads(){
+  try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }catch(e){ return []; }
+}
+function saveLeads(leads){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(leads)); return true; }
+  catch(e){ toast("⚠️ Could not save — storage full? Export your CSV now."); return false; }
+}
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* ============ build program chips ============ */
+const trackList = $("#trackList");
+TRACKS.forEach(t => {
+  const div = document.createElement("div");
+  div.className = "track"; div.dataset.track = t.id;
+  div.innerHTML = `<h3><span class="dot"></span>${t.label}</h3><div class="chips"></div>`;
+  const chips = div.querySelector(".chips");
+  t.programs.forEach(p => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.textContent = p;
+    b.addEventListener("click", () => {
+      const i = picked.indexOf(p);
+      if(i >= 0){ picked.splice(i,1); b.classList.remove("on"); }
+      else { picked.push(p); b.classList.add("on"); }
+      updateCount();
+    });
+    chips.appendChild(b);
+  });
+  trackList.appendChild(div);
+});
+function updateCount(){
+  $("#pickCount").textContent = picked.length
+    ? `${picked.length} selected · badge color: ${({tech:"Blue / Technology",business:"Gold / Business",acct:"Gray / Accounting"})[TRACK_OF[picked[0]]]}`
+    : "";
+  if(picked.length) $("#errProgs").textContent = "";
+}
+
+/* ============ badge rendering ============ */
+function firstNameSize(name){
+  const n = name.length;
+  if(n <= 7)  return 30;
+  if(n <= 10) return 24;
+  if(n <= 14) return 19;
+  return 15;
+}
+function renderBadge(el, lead){
+  const parts = lead.name.trim().split(/\s+/);
+  const first = parts[0] || "";
+  const rest  = parts.slice(1).join(" ");
+  const ints  = lead.programs.slice(0,3).join(" · ") + (lead.programs.length > 3 ? " +" + (lead.programs.length-3) : "");
+  el.dataset.track = TRACK_OF[lead.programs[0]] || "acct";
+  el.innerHTML = `
+    <div class="b-band">
+      <span class="b-school">Central Piedmont</span>
+      <span class="b-ev">Business &amp; Technology<br>Advising &amp; Career Day</span>
+    </div>
+    <div class="b-main">
+      <div class="b-hello">Hello, my name is</div>
+      <div class="b-first" style="font-size:${firstNameSize(first)}pt">${esc(first)}</div>
+      <div class="b-last">${esc(rest) || "&nbsp;"}</div>
+    </div>
+    <div class="b-foot">
+      <div class="b-rule"></div>
+      <div class="b-int"><b>Interested in</b> &nbsp;${esc(ints)}</div>
+    </div>`;
+}
+
+/* ============ flow ============ */
+$("#welcome").addEventListener("click", e => {
+  if(e.target.id === "adminBtn") return;
+  show("#form"); setTimeout(() => $("#inName").focus(), 350);
+});
+$("#backWelcome").addEventListener("click", () => show("#welcome"));
+$("#backForm").addEventListener("click", () => show("#form"));
+
+$("#toPreview").addEventListener("click", () => {
+  const name = $("#inName").value.trim();
+  const email = $("#inEmail").value.trim();
+  let ok = true;
+  $("#errName").textContent = name ? "" : "Please enter your name."; ok = ok && !!name;
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+  $("#errEmail").textContent = emailOk ? "" : "Please enter a valid email address."; ok = ok && emailOk;
+  $("#errProgs").textContent = picked.length ? "" : "Pick at least one program of interest."; ok = ok && picked.length > 0;
+  if(!ok) return;
+  pendingLead = { ts:new Date().toISOString(), name, email, programs:[...picked] };
+  renderBadge($("#badgePreview"), pendingLead);
+  show("#preview");
+});
+
+function commitLead(lead){
+  const leads = loadLeads(); leads.push(lead); saveLeads(leads);
+}
+function finishCheckin(){
+  $("#doneName").textContent = `You’re checked in, ${pendingLead.name.trim().split(/\s+/)[0]}!`;
+  $("#done").classList.add("show");
+  setTimeout(() => {
+    $("#done").classList.remove("show");
+    resetKiosk(); show("#welcome");
+  }, 3400);
+}
+function resetKiosk(){
+  picked = []; pendingLead = null;
+  $("#inName").value = ""; $("#inEmail").value = "";
+  document.querySelectorAll(".chip.on").forEach(c => c.classList.remove("on"));
+  ["#errName","#errEmail","#errProgs"].forEach(s => $(s).textContent = "");
+  updateCount();
+}
+
+$("#printBtn").addEventListener("click", () => {
+  renderBadge($("#badgePrint"), pendingLead);
+  commitLead(pendingLead);
+  window.print();          // AirPrint dialog; lead already saved
+  finishCheckin();
+});
+$("#skipPrint").addEventListener("click", () => { commitLead(pendingLead); finishCheckin(); });
+
+/* ============ admin ============ */
+$("#adminBtn").addEventListener("click", e => { e.stopPropagation(); renderAdmin(); show("#admin"); });
+$("#adminBack").addEventListener("click", () => show("#welcome"));
+
+function renderAdmin(){
+  const leads = loadLeads();
+  const counts = {};
+  leads.forEach(l => l.programs.forEach(p => counts[p] = (counts[p]||0)+1));
+  $("#statCards").innerHTML = `
+    <div class="stat"><div class="n">${leads.length}</div><div class="l">Check-ins</div></div>
+    <div class="stat"><div class="n">${Object.keys(counts).length}</div><div class="l">Programs picked</div></div>`;
+  $("#progCounts").innerHTML = Object.entries(counts).sort((a,b)=>b[1]-a[1])
+    .map(([p,c]) => `<span class="tag">${esc(p)} <span class="ct">${c}</span></span>`).join("");
+  if(!leads.length){
+    $("#leadTable").innerHTML = `<div class="empty">No check-ins yet — leads will appear here.</div>`;
+    return;
+  }
+  const rows = leads.map((l,i) => `
+    <tr>
+      <td class="mono">${new Date(l.ts).toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}</td>
+      <td><strong>${esc(l.name)}</strong></td>
+      <td>${esc(l.email)}</td>
+      <td>${l.programs.map(esc).join(", ")}</td>
+      <td style="white-space:nowrap">
+        <button class="rowbtn print" data-i="${i}" data-act="reprint">Reprint</button>
+        <button class="rowbtn del" data-i="${i}" data-act="del">Delete</button>
+      </td>
+    </tr>`).join("");
+  $("#leadTable").innerHTML = `<table>
+    <thead><tr><th>Time</th><th>Name</th><th>Email</th><th>Programs of Interest</th><th></th></tr></thead>
+    <tbody>${rows}</tbody></table>`;
+  $("#leadTable").querySelectorAll(".rowbtn").forEach(b => b.addEventListener("click", () => {
+    const leads = loadLeads(); const i = +b.dataset.i;
+    if(b.dataset.act === "reprint"){
+      renderBadge($("#badgePrint"), leads[i]); window.print();
+    } else {
+      leads.splice(i,1); saveLeads(leads); renderAdmin();
+    }
+  }));
+}
+
+$("#exportCsv").addEventListener("click", () => {
+  const leads = loadLeads();
+  const q = v => `"${String(v).replace(/"/g,'""')}"`;
+  const csv = "Timestamp,Name,Email,Programs\n" +
+    leads.map(l => [q(l.ts), q(l.name), q(l.email), q(l.programs.join("; "))].join(",")).join("\n");
+  const blob = new Blob([csv], {type:"text/csv"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `advising-career-day-leads-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  toast(`Exported ${leads.length} lead${leads.length === 1 ? "" : "s"} — check Files ▸ Downloads or the share sheet.`);
+});
+
+$("#clearBtn").addEventListener("click", () => $("#confirmClear").classList.add("show"));
+$("#clearNo").addEventListener("click", () => $("#confirmClear").classList.remove("show"));
+$("#clearYes").addEventListener("click", () => {
+  localStorage.removeItem(STORE_KEY);
+  $("#confirmClear").classList.remove("show");
+  renderAdmin(); toast("All lead data cleared.");
+});
+</script>
+</body>
+</html>
