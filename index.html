@@ -156,8 +156,8 @@ body{
 .b-last{font-size:10pt; font-weight:500; color:var(--gray); margin-top:.03in; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .b-foot{flex:none; padding:0 .16in .09in}
 .b-rule{height:2pt; background:#2E2F31; margin-bottom:.05in}
-.b-int{font-size:6.4pt; line-height:1.5; color:var(--gray); font-weight:500;
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.b-int{font-size:6.4pt; line-height:1.45; color:var(--gray); font-weight:500;
+  overflow:hidden; max-height:.52in} /* wraps; JS shrinks font until all programs fit */
 .b-int b{color:#2E2F31; font-weight:700; letter-spacing:.08em; text-transform:uppercase; font-size:5.6pt}
 
 /* ============ ADMIN ============ */
@@ -397,18 +397,24 @@ function updateCount(){
 }
 
 /* ============ badge rendering ============ */
-function firstNameSize(name){
-  const n = name.length;
-  if(n <= 7)  return 30;
-  if(n <= 10) return 24;
-  if(n <= 14) return 19;
-  return 15;
+/* shrink an element's font until its content fits its box (width or height) */
+function fitWidth(el, start, min){
+  for(let s = start; s >= min; s -= 0.5){
+    el.style.fontSize = s + "pt";
+    if(el.scrollWidth <= el.clientWidth + 1) return;
+  }
+}
+function fitHeight(el, start, min){
+  for(let s = start; s >= min; s -= 0.2){
+    el.style.fontSize = s + "pt";
+    if(el.scrollHeight <= el.clientHeight + 1) return;
+  }
 }
 function renderBadge(el, lead){
   const parts = lead.name.trim().split(/\s+/);
   const first = parts[0] || "";
   const rest  = parts.slice(1).join(" ");
-  const ints  = lead.programs.slice(0,3).join(" · ") + (lead.programs.length > 3 ? " +" + (lead.programs.length-3) : "");
+  const ints  = lead.programs.map(esc).join("&nbsp;· ");
   el.innerHTML = `
     <div class="b-band">
       <img class="b-logo" src="${LOGO}" alt="Central Piedmont">
@@ -416,13 +422,16 @@ function renderBadge(el, lead){
     </div>
     <div class="b-main">
       <div class="b-hello">Hello, my name is</div>
-      <div class="b-first" style="font-size:${firstNameSize(first)}pt">${esc(first)}</div>
+      <div class="b-first">${esc(first)}</div>
       <div class="b-last">${esc(rest) || "&nbsp;"}</div>
     </div>
     <div class="b-foot">
       <div class="b-rule"></div>
-      <div class="b-int"><b>Interested in</b> &nbsp;${esc(ints)}</div>
+      <div class="b-int"><b>Interested in</b> &nbsp;${ints}</div>
     </div>`;
+  fitWidth(el.querySelector(".b-first"), 30, 11);
+  fitWidth(el.querySelector(".b-last"), 10, 7);
+  fitHeight(el.querySelector(".b-int"), 6.4, 4);
 }
 
 /* ============ flow ============ */
