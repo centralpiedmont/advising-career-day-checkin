@@ -578,10 +578,23 @@ function fitHeight(el, start, min){
     if(el.scrollHeight <= el.clientHeight + 1) return;
   }
 }
+// If a name leads with a title (Dr., SSG, …) the big line is "Dr. <Last>" and the
+// full name goes small underneath; otherwise big = first name, small = the rest.
+const HONORIFIC = /^(dr|prof|professor|mr|mrs|ms|mx|rev|hon|capt|lt|col|gen|sgt|ssg|msgt|cpl|pfc)\.?$/i;
+function splitName(raw){
+  const parts = (raw || "").trim().split(/\s+/).filter(Boolean);
+  if(parts.length >= 2 && HONORIFIC.test(parts[0])){
+    const h = parts[0].replace(/\.$/, "");
+    const dotted = /^(dr|prof|professor|mr|mrs|ms|mx|rev|hon|capt|lt|col|gen)$/i.test(h);
+    const hon = dotted ? h + "." : parts[0];        // "Dr"→"Dr."; military ranks kept as-is
+    const rest = parts.slice(1);                    // name without the honorific
+    const last = rest[rest.length - 1] || "";
+    return { big: hon + " " + last, small: rest.length >= 2 ? rest.join(" ") : "" };
+  }
+  return { big: parts[0] || "", small: parts.slice(1).join(" ") };
+}
 function renderBadge(el, lead){
-  const parts = lead.name.trim().split(/\s+/);
-  const first = parts[0] || "";
-  const rest  = parts.slice(1).join(" ");
+  const { big: first, small: rest } = splitName(lead.name);
   const ints  = (lead.programs||[]).map(esc).join("&nbsp;· ");
   el.innerHTML = `
     <div class="b-band">
@@ -604,9 +617,7 @@ function renderBadge(el, lead){
 }
 /* presenter/staff nametag: role line on top, big name, organization footer */
 function renderStaffBadge(el, rec){
-  const parts = (rec.name || "").trim().split(/\s+/);
-  const first = parts[0] || "";
-  const rest  = parts.slice(1).join(" ");
+  const { big: first, small: rest } = splitName(rec.name);
   el.dataset.kind = "staff";
   el.innerHTML = `
     <div class="b-band">
