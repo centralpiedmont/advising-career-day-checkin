@@ -1,0 +1,6 @@
+{
+  "port": 8088,
+  "printer": "_4BARCODE_4B_2054N",
+  "labelSize": "3x2",
+  "chromePath": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+}

@@ -1,0 +1,10 @@
+{
+  "name": "badge-print-station",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mac print server for the Advising & Career Day badge kiosk",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  }
+}
