@@ -63,6 +63,15 @@ name badge via AirPrint to a label printer. Companion to the signage system in
 - **Staff/presenter variant** (added 2026-06-15): same band; main area shows a bold
   uppercase **role** line, the large name, then the **organization** as the footer
   line (footer omitted when no org). Same width/height auto-fitting as student badges.
+- **Fluid sizing** (revised 2026-06-15): the badge is no longer a fixed 3×2 box —
+  every dimension is expressed in `cqw` (% of the badge container's width) and the
+  badge fills its container at a 3:2 ratio. iOS Safari ignores `@page{size}`, so a
+  fixed-inch badge printed tiny in the corner of a US-Letter sheet; the fluid badge
+  scales to fill whatever media the printer uses. In print, `#printBadge` is the
+  container at `width:100%; height:100vh` and the badge fills it (exact 3:2 on a true
+  3×2 label; fills the sheet otherwise). Auto-fit font sizes are in `cqw` too, so a
+  fit found in the preview is scale-invariant and correct on the printed label.
+  Both print screens show a hint to pick the label printer + paper size (Scaling 100%).
 
 ## Data model
 

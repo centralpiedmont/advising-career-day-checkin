@@ -69,13 +69,13 @@ body{
 }
 .w-inner{position:relative; z-index:2; flex:1; display:flex; flex-direction:column;
   justify-content:center; padding:0 9vw; gap:0}
-.w-logo{width:clamp(300px,34vw,520px); align-self:flex-start; animation:rise .7s ease both}
-.w-title{font-weight:900; font-size:clamp(44px,8.4vw,118px); line-height:.98; margin:.25em 0 .12em;
+.w-logo{width:clamp(300px,27vw,430px); align-self:flex-start; animation:rise .7s ease both}
+.w-title{font-weight:900; font-size:clamp(38px,6.6vw,96px); line-height:.98; margin:.2em 0 .1em;
   animation:rise .7s .08s ease both}
 .w-title em{font-style:normal; color:var(--gold)}
 .w-sub{font-size:clamp(17px,2.3vw,27px); font-weight:300; color:var(--gray-25);
   animation:rise .7s .16s ease both}
-.w-rule{width:6.5em; height:3px; background:var(--gold); margin:2.2em 0; animation:grow .8s .25s ease both; transform-origin:left}
+.w-rule{width:6.5em; height:3px; background:var(--gold); margin:1.3em 0; animation:grow .8s .25s ease both; transform-origin:left}
 .w-cta{display:inline-flex; align-items:center; gap:.7em; align-self:flex-start;
   background:var(--blue); color:#fff; border:none; font:inherit; font-weight:600;
   font-size:clamp(19px,2.5vw,29px); padding:.85em 1.7em; border-radius:14px; cursor:pointer;
@@ -85,10 +85,11 @@ body{
 .w-pulse{position:absolute; inset:0; border-radius:14px; box-shadow:0 0 0 0 rgba(0,93,131,.55); animation:pulse 2.6s 1.4s infinite}
 .w-cta{position:relative}
 .w-foot{position:relative; z-index:2; display:flex; justify-content:space-between; align-items:center;
-  padding:0 9vw 4.5vh; color:var(--gray-50); font-size:clamp(12px,1.4vw,16px); letter-spacing:.06em}
+  padding:0 9vw calc(env(safe-area-inset-bottom, 0px) + 2.6vh); color:var(--gray-50);
+  font-size:clamp(12px,1.4vw,16px); letter-spacing:.06em}
 .w-foot b{color:var(--gold); font-weight:600}
 #adminBtn{background:none; border:none; color:var(--gray-75); font-size:22px; cursor:pointer; padding:10px; opacity:.55}
-.w-secondary{margin-top:1.5em; align-self:flex-start; background:none; color:#fff; font:inherit;
+.w-secondary{margin-top:1.1em; align-self:flex-start; background:none; color:#fff; font:inherit;
   font-weight:500; font-size:clamp(14px,1.7vw,19px); padding:.62em 1.35em; border-radius:11px;
   border:2px solid rgba(255,255,255,.4); cursor:pointer; animation:rise .7s .38s ease both;
   display:inline-flex; align-items:center; gap:.55em}
@@ -150,39 +151,47 @@ body{
 /* ============ PREVIEW ============ */
 #preview .body{flex:1; display:flex; align-items:center; justify-content:center; gap:6vw;
   padding:30px 6vw; flex-wrap:wrap; overflow:auto}
-.badge-stage{filter:drop-shadow(0 24px 48px rgba(46,47,49,.28)); animation:rise .5s ease both}
+.badge-stage{container-type:inline-size; width:min(560px,84vw);
+  filter:drop-shadow(0 24px 48px rgba(46,47,49,.28)); animation:rise .5s ease both}
 .preview-side{max-width:420px; animation:rise .5s .08s ease both}
 .preview-side h3{font-size:30px; font-weight:800; margin-bottom:10px}
 .preview-side p{font-size:17px; color:var(--gray-75); line-height:1.55; margin-bottom:28px}
 .preview-side .stack{display:flex; flex-direction:column; gap:14px}
 .preview-side .btn-blue{font-size:23px; padding:19px 38px}
+.printhint{font-size:14px; line-height:1.5; color:var(--gray-75); margin-top:18px; max-width:420px}
+.printhint b{color:var(--blue); font-weight:600}
+.printhint.footfoot{margin-top:0; max-width:none; flex:1 1 auto; text-align:center}
+@media (max-width:760px){ .printhint.footfoot{display:none} }
 
-/* ============ the badge (screen preview + print) ============ */
-/* True size 3in × 2in. On screen we render at 2.2× via transform on .badge-stage */
+/* ============ the badge — FLUID (screen preview + print) ============ */
+/* Designed at 3×2 but expressed entirely in cqw (% of the badge's container width)
+   so it FILLS whatever page the printer uses. iOS Safari ignores @page{size}, so a
+   fixed-inch badge prints tiny in the corner of a letter sheet; a fluid one scales to
+   fill the selected label (or the whole sheet). The container (.badge-stage on screen,
+   #printBadge in print) sets the width; everything else is a fraction of it. */
 .badge{
-  width:3in; height:2in; background:#fff; overflow:hidden; position:relative;
+  width:100%; aspect-ratio:3 / 2; font-size:2.96cqw;
+  background:#fff; overflow:hidden; position:relative;
   display:flex; flex-direction:column; font-family:var(--franklin);
   -webkit-print-color-adjust:exact; print-color-adjust:exact;
 }
-.badge-stage .badge{transform:scale(2.2); transform-origin:center; margin:1.3in 1.95in}
-.b-band{height:.42in; display:flex; align-items:center; justify-content:space-between;
-  padding:0 .16in; flex:none}
-.b-band .b-logo{height:.27in; display:block}
-.b-band .b-ev{font-size:5.6pt; font-weight:600; letter-spacing:.14em; text-transform:uppercase; text-align:right; line-height:1.45}
-.b-band{background:#2E2F31; color:#fff} /* monochrome — labels print on white thermal stock */
-.b-main{flex:1; display:flex; flex-direction:column; justify-content:center; padding:0 .16in; min-height:0}
-.b-hello{font-size:6pt; letter-spacing:.26em; text-transform:uppercase; color:var(--gray); font-weight:700; margin-bottom:.02in}
-.b-first{font-weight:900; line-height:.95; color:var(--ink); white-space:nowrap}
-.b-last{font-size:10pt; font-weight:500; color:var(--gray); margin-top:.03in; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.b-foot{flex:none; padding:0 .16in .09in}
-.b-rule{height:2pt; background:#2E2F31; margin-bottom:.05in}
-.b-int{font-size:6.4pt; line-height:1.45; color:var(--gray); font-weight:500;
-  overflow:hidden; max-height:.52in} /* wraps; JS shrinks font until all programs fit */
-.b-int b{color:#2E2F31; font-weight:700; letter-spacing:.08em; text-transform:uppercase; font-size:5.6pt}
+.b-band{height:14cqw; display:flex; align-items:center; justify-content:space-between;
+  padding:0 5.33cqw; flex:none; background:#2E2F31; color:#fff}
+.b-band .b-logo{height:9cqw; display:block; width:auto}
+.b-band .b-ev{font-size:2.59cqw; font-weight:600; letter-spacing:.14em; text-transform:uppercase; text-align:right; line-height:1.45}
+.b-main{flex:1; display:flex; flex-direction:column; justify-content:center; padding:0 5.33cqw; min-height:0}
+.b-hello{font-size:2.78cqw; letter-spacing:.26em; text-transform:uppercase; color:var(--gray); font-weight:700; margin-bottom:.67cqw}
+.b-first{font-size:13.9cqw; font-weight:900; line-height:.95; color:var(--ink); white-space:nowrap}
+.b-last{font-size:4.63cqw; font-weight:500; color:var(--gray); margin-top:1cqw; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.b-foot{flex:none; padding:0 5.33cqw 3cqw}
+.b-rule{height:.93cqw; background:#2E2F31; margin-bottom:1.67cqw}
+.b-int{font-size:2.96cqw; line-height:1.45; color:var(--gray); font-weight:500;
+  overflow:hidden; max-height:17.3cqw} /* wraps; JS shrinks font until all programs fit */
+.b-int b{color:#2E2F31; font-weight:700; letter-spacing:.08em; text-transform:uppercase; font-size:2.59cqw}
 /* staff/presenter badge: prominent role line + organization footer */
-.b-role{font-weight:900; letter-spacing:.09em; text-transform:uppercase; color:#2E2F31;
-  line-height:1; margin-bottom:.045in; white-space:nowrap}
-.badge[data-kind="staff"] .b-int{color:#2E2F31; font-weight:600; font-size:8pt; letter-spacing:.01em}
+.b-role{font-size:4.4cqw; font-weight:900; letter-spacing:.09em; text-transform:uppercase; color:#2E2F31;
+  line-height:1; margin-bottom:1.5cqw; white-space:nowrap}
+.badge[data-kind="staff"] .b-int{color:#2E2F31; font-weight:600; font-size:3.7cqw; letter-spacing:.01em}
 
 /* ============ STAFF / PRESENTER ============ */
 #staff .body{flex:1; overflow:auto; -webkit-overflow-scrolling:touch; padding:34px 6vw 130px}
@@ -191,8 +200,7 @@ body{
 .staff-form .field{margin-bottom:24px}
 .staff-form .opt{color:var(--gray-50); font-weight:500; letter-spacing:0; text-transform:none}
 .staff-preview{flex:0 0 auto; display:flex; justify-content:center; padding-top:6px}
-/* compact inline preview (the big 2.2× stage is for the full preview screen) */
-.staff-preview .badge{transform:scale(1.7); margin:.74in 1.1in}
+.staff-preview .badge-stage{width:min(440px,90vw)}  /* narrower so it sits beside the form */
 .rolecustom{margin-top:14px; width:100%; max-width:420px; font:inherit; font-size:20px; font-weight:500;
   background:#fff; border:2px solid var(--gray-25); border-radius:12px; padding:14px 16px;
   -webkit-user-select:text; user-select:text}
@@ -248,14 +256,18 @@ td.mono{color:var(--gray-75); font-size:13.5px; white-space:nowrap}
   z-index:70; transition:transform .3s; max-width:84vw; text-align:center}
 .toast.show{transform:translateX(-50%) translateY(0)}
 
-/* ============ PRINT: only the badge, exact 3×2 ============ */
-#printBadge{position:fixed; left:-9in; top:0}
+/* ============ PRINT: only the badge, filling the page ============ */
+/* off-screen but a 3in-wide container so the auto-fit measures at design size */
+#printBadge{position:fixed; left:-9in; top:0; container-type:inline-size; width:3in}
 @media print{
   @page{size:3in 2in; margin:0}
-  body{overflow:visible; background:#fff}
+  html,body{margin:0; padding:0; width:auto; height:auto; overflow:visible; background:#fff}
   body>*{display:none !important}
-  #printBadge{display:block !important; position:static; left:0}
-  #printBadge .badge{transform:none; margin:0}
+  /* fill the page both ways: on a true 3×2 label this is the exact design (3:2, no
+     distortion); if the printer is on letter the badge still fills the sheet instead
+     of sitting tiny in a corner. The container width drives every interior size. */
+  #printBadge{display:block !important; position:static; left:0; width:100%; height:100vh}
+  #printBadge .badge{width:100%; height:100%; aspect-ratio:auto}
 }
 </style>
 </head>
@@ -332,6 +344,7 @@ td.mono{color:var(--gray-75); font-size:13.5px; white-space:nowrap}
         <button class="btn btn-ghost" type="button" id="skipPrint">Check in without printing</button>
         <button class="btn btn-ghost" type="button" id="backForm">← Edit my info</button>
       </div>
+      <p class="printhint">In the print dialog, choose the <b>label printer</b> and set <b>Paper Size</b> to your 3×2 label with <b>Scaling 100%</b>. iPad defaults to US Letter.</p>
     </div>
   </div>
 </section>
@@ -371,6 +384,7 @@ td.mono{color:var(--gray-75); font-size:13.5px; white-space:nowrap}
   </div>
   <div class="formfoot">
     <button class="btn btn-ghost" type="button" id="staffBack">← Back</button>
+    <span class="printhint footfoot">In the print dialog pick the <b>label printer</b> &amp; set <b>Paper Size</b> to your 3×2 label (Scaling 100%).</span>
     <span class="spacer"></span>
     <button class="btn btn-blue" type="button" id="staffPrint">Print Nametag 🖨</button>
   </div>
@@ -500,16 +514,18 @@ function updateCount(){
 }
 
 /* ============ badge rendering ============ */
-/* shrink an element's font until its content fits its box (width or height) */
+/* shrink an element's font until its content fits its box (width or height).
+   Sizes are in cqw (% of the badge container width) so the chosen size is
+   scale-invariant: a fit found in the preview is also correct on the printed label. */
 function fitWidth(el, start, min){
-  for(let s = start; s >= min; s -= 0.5){
-    el.style.fontSize = s + "pt";
+  for(let s = start; s >= min; s -= 0.25){
+    el.style.fontSize = s + "cqw";
     if(el.scrollWidth <= el.clientWidth + 1) return;
   }
 }
 function fitHeight(el, start, min){
-  for(let s = start; s >= min; s -= 0.2){
-    el.style.fontSize = s + "pt";
+  for(let s = start; s >= min; s -= 0.15){
+    el.style.fontSize = s + "cqw";
     if(el.scrollHeight <= el.clientHeight + 1) return;
   }
 }
@@ -533,9 +549,9 @@ function renderBadge(el, lead){
       <div class="b-int"><b>Interested in</b> &nbsp;${ints}</div>
     </div>`;
   el.dataset.kind = "student";
-  fitWidth(el.querySelector(".b-first"), 30, 11);
-  fitWidth(el.querySelector(".b-last"), 10, 7);
-  fitHeight(el.querySelector(".b-int"), 6.4, 4);
+  fitWidth(el.querySelector(".b-first"), 13.9, 5.1);
+  fitWidth(el.querySelector(".b-last"), 4.63, 3.24);
+  fitHeight(el.querySelector(".b-int"), 2.96, 1.85);
 }
 /* presenter/staff nametag: role line on top, big name, organization footer */
 function renderStaffBadge(el, rec){
@@ -549,15 +565,15 @@ function renderStaffBadge(el, rec){
       <span class="b-ev">Business &amp; Technology<br>Advising &amp; Career Day</span>
     </div>
     <div class="b-main">
-      <div class="b-role" style="font-size:9.5pt">${esc(rec.role || "")}</div>
+      <div class="b-role">${esc(rec.role || "")}</div>
       <div class="b-first">${esc(first)}</div>
       <div class="b-last">${esc(rest) || "&nbsp;"}</div>
     </div>
     ${rec.org ? `<div class="b-foot"><div class="b-rule"></div><div class="b-int">${esc(rec.org)}</div></div>` : ""}`;
-  fitWidth(el.querySelector(".b-role"), 9.5, 6);
-  fitWidth(el.querySelector(".b-first"), 30, 11);
-  fitWidth(el.querySelector(".b-last"), 10, 7);
-  if(rec.org) fitWidth(el.querySelector(".b-int"), 8, 5);
+  fitWidth(el.querySelector(".b-role"), 4.4, 2.78);
+  fitWidth(el.querySelector(".b-first"), 13.9, 5.1);
+  fitWidth(el.querySelector(".b-last"), 4.63, 3.24);
+  if(rec.org) fitWidth(el.querySelector(".b-int"), 3.7, 2.31);
 }
 /* dispatch by record kind so print/reprint work for both badge types */
 function paintBadge(el, rec){

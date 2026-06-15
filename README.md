@@ -12,9 +12,20 @@ no server — leads stay on the iPad until you export them.
 2. Tap **Share → Add to Home Screen → Add**. Launch it from the home-screen icon —
    it runs full-screen like an app and keeps working if Wi-Fi drops.
 3. Make sure the iPad and the **AirPrint label printer** (Brother QL or similar,
-   loaded with 2 × 3 in badge labels) are on the same Wi-Fi. Print one test badge
-   and pick the printer + label size in the print dialog — iOS remembers it.
+   loaded with 3 × 2 in badge labels) are on the same Wi-Fi.
 4. In Settings → Display & Brightness, set **Auto-Lock to Never** for the event.
+
+### ⚠️ Printing setup (important — do this once)
+
+iPad's print dialog **defaults to "US Letter," which is wrong** — that makes the
+badge print tiny on a big sheet. On the first print:
+
+1. Tap **Printer** and choose your **label printer** (not a regular office printer).
+2. Tap **Paper Size** and choose your **3 × 2 label** media.
+3. Set **Scaling** to **100%** and leave **Orientation** on the landscape option.
+
+iOS remembers these for the rest of the event. The badge is built to fill whatever
+size you pick, so once the label media is selected it fills the label edge to edge.
 
 ## During the event
 
