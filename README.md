@@ -63,3 +63,9 @@ Everything is in `index.html` — the program chip list is the `TRACKS` array an
 staff roles are the `ROLES` array at the top of the `<script>` block. Design spec:
 `docs/superpowers/specs/2026-06-12-checkin-badge-app-design.md`.
 Companion signage system: `../AdvisingAndCareerDay/` (same track colors).
+
+## Printing on a non-AirPrint label printer (Mac station)
+For printers without AirPrint (e.g. the 4Barcode 4B-2054N), run the **Badge Print
+Station** in [`badge-print-station/`](badge-print-station/): the Mac serves this same
+kiosk to the iPad and prints badges silently over USB. Clone this repo, then
+`cd badge-print-station && npm start`. See its README for setup.
