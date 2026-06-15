@@ -175,23 +175,24 @@ body{
   display:flex; flex-direction:column; font-family:var(--franklin);
   -webkit-print-color-adjust:exact; print-color-adjust:exact;
 }
-.b-band{height:14cqw; display:flex; align-items:center; justify-content:space-between;
+/* sizes tuned up for a 203-dpi label printer — keep small text legible */
+.b-band{height:16.5cqw; display:flex; align-items:center; justify-content:space-between;
   padding:0 5.33cqw; flex:none; background:#2E2F31; color:#fff}
-.b-band .b-logo{height:9cqw; display:block; width:auto}
-.b-band .b-ev{font-size:2.59cqw; font-weight:600; letter-spacing:.14em; text-transform:uppercase; text-align:right; line-height:1.45}
+.b-band .b-logo{height:12cqw; display:block; width:auto}
+.b-band .b-ev{font-size:2.9cqw; font-weight:600; letter-spacing:.12em; text-transform:uppercase; text-align:right; line-height:1.4}
 .b-main{flex:1; display:flex; flex-direction:column; justify-content:center; padding:0 5.33cqw; min-height:0}
-.b-hello{font-size:2.78cqw; letter-spacing:.26em; text-transform:uppercase; color:var(--gray); font-weight:700; margin-bottom:.67cqw}
+.b-hello{font-size:3cqw; letter-spacing:.24em; text-transform:uppercase; color:var(--gray); font-weight:700; margin-bottom:.67cqw}
 .b-first{font-size:13.9cqw; font-weight:900; line-height:.95; color:var(--ink); white-space:nowrap}
 .b-last{font-size:4.63cqw; font-weight:500; color:var(--gray); margin-top:1cqw; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .b-foot{flex:none; padding:0 5.33cqw 3cqw}
 .b-rule{height:.93cqw; background:#2E2F31; margin-bottom:1.67cqw}
-.b-int{font-size:2.96cqw; line-height:1.45; color:var(--gray); font-weight:500;
-  overflow:hidden; max-height:17.3cqw} /* wraps; JS shrinks font until all programs fit */
-.b-int b{color:#2E2F31; font-weight:700; letter-spacing:.08em; text-transform:uppercase; font-size:2.59cqw}
+.b-int{font-size:3.2cqw; line-height:1.45; color:var(--gray); font-weight:500;
+  overflow:hidden; max-height:18cqw} /* wraps; JS shrinks font until all programs fit */
+.b-int b{color:#2E2F31; font-weight:700; letter-spacing:.07em; text-transform:uppercase; font-size:2.9cqw}
 /* staff/presenter badge: prominent role line + organization footer */
 .b-role{font-size:4.4cqw; font-weight:900; letter-spacing:.09em; text-transform:uppercase; color:#2E2F31;
   line-height:1; margin-bottom:1.5cqw; white-space:nowrap}
-.badge[data-kind="staff"] .b-int{color:#2E2F31; font-weight:600; font-size:3.7cqw; letter-spacing:.01em}
+.badge[data-kind="staff"] .b-int{color:#2E2F31; font-weight:600; font-size:3.9cqw; letter-spacing:.01em}
 
 /* ============ STAFF / PRESENTER ============ */
 #staff .body{flex:1; overflow:auto; -webkit-overflow-scrolling:touch; padding:34px 6vw 130px}
@@ -258,6 +259,8 @@ td.mono{color:var(--gray-75); font-size:13.5px; white-space:nowrap}
   background:var(--ink); color:#fff; padding:14px 26px; border-radius:12px; font-size:16px;
   z-index:70; transition:transform .3s; max-width:84vw; text-align:center}
 .toast.show{transform:translateX(-50%) translateY(0)}
+#offline{bottom:90px}
+#offline.show{transform:translateX(-50%) translateY(0)}
 
 /* ============ PRINT: only the badge, filling the page ============ */
 /* off-screen but a 3in-wide container so the auto-fit measures at design size */
@@ -442,6 +445,7 @@ td.mono{color:var(--gray-75); font-size:13.5px; white-space:nowrap}
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="toast" id="offline" style="background:#8A2432">⚠️ Can't reach the print station — check-ins are saved and will print when reconnected.</div>
 
 <!-- print-only badge -->
 <div id="printBadge"><div class="badge" id="badgePrint"></div></div>
@@ -478,6 +482,8 @@ let pendingLead = null;   // lead being previewed
 let staffRole = "";       // selected presenter/staff role (built-in or custom)
 let pendingStaff = null;  // staff nametag being previewed/printed
 let adminView = "students";
+let STATION = null;            // server config object when served by the Mac station
+const QUEUE_KEY = "acd-queue-2026";
 
 /* ============ helpers ============ */
 const $ = s => document.querySelector(s);
@@ -506,6 +512,30 @@ function saveStaff(list){
   catch(e){ toast("⚠️ Could not save — storage full? Export your CSV now."); return false; }
 }
 function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* ---- station mode: send records to the Mac instead of window.print/localStorage ---- */
+async function postPrint(rec){
+  const r = await fetch("/print", { method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ ...rec, labelSize: curLabel() }) });
+  if(!r.ok) throw new Error("server " + r.status);
+  const j = await r.json();
+  if(!j.ok && j.error) throw new Error(j.error);   // record was still saved server-side
+  return j;
+}
+function enqueue(rec){
+  let q; try{ q = JSON.parse(localStorage.getItem(QUEUE_KEY)) || []; }catch(e){ q = []; }
+  q.push({ ...rec, labelSize: curLabel() });
+  try{ localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }catch(e){}
+}
+async function flushQueue(){
+  if(!STATION) return;
+  let q; try{ q = JSON.parse(localStorage.getItem(QUEUE_KEY)) || []; }catch(e){ q = []; }
+  if(!q.length) return;
+  const left = [];
+  for(const rec of q){ try{ await postPrint(rec); }catch(e){ left.push(rec); } }
+  try{ localStorage.setItem(QUEUE_KEY, JSON.stringify(left)); }catch(e){}
+  $("#offline").classList.toggle("show", left.length > 0);
+}
 
 /* ============ build program chips ============ */
 const trackList = $("#trackList");
@@ -570,7 +600,7 @@ function renderBadge(el, lead){
   el.dataset.kind = "student";
   fitWidth(el.querySelector(".b-first"), 13.9, 5.1);
   fitWidth(el.querySelector(".b-last"), 4.63, 3.24);
-  fitHeight(el.querySelector(".b-int"), 2.96, 1.85);
+  fitHeight(el.querySelector(".b-int"), 3.2, 2.2);
 }
 /* presenter/staff nametag: role line on top, big name, organization footer */
 function renderStaffBadge(el, rec){
@@ -592,7 +622,7 @@ function renderStaffBadge(el, rec){
   fitWidth(el.querySelector(".b-role"), 4.4, 2.78);
   fitWidth(el.querySelector(".b-first"), 13.9, 5.1);
   fitWidth(el.querySelector(".b-last"), 4.63, 3.24);
-  if(rec.org) fitWidth(el.querySelector(".b-int"), 3.7, 2.31);
+  if(rec.org) fitWidth(el.querySelector(".b-int"), 3.9, 2.6);
 }
 /* dispatch by record kind so print/reprint work for both badge types */
 function paintBadge(el, rec){
@@ -657,13 +687,25 @@ function resetKiosk(){
   updateCount();
 }
 
-$("#printBtn").addEventListener("click", () => {
-  renderBadge($("#badgePrint"), pendingLead);
-  commitLead(pendingLead);
-  window.print();          // AirPrint dialog; lead already saved
-  finishCheckin();
+$("#printBtn").addEventListener("click", async () => {
+  if(STATION){
+    try{ await postPrint(pendingLead); $("#offline").classList.remove("show"); }
+    catch(e){ enqueue(pendingLead); $("#offline").classList.add("show"); }
+    finishCheckin();
+  } else {
+    renderBadge($("#badgePrint"), pendingLead);
+    commitLead(pendingLead);
+    window.print();          // AirPrint dialog; lead already saved
+    finishCheckin();
+  }
 });
-$("#skipPrint").addEventListener("click", () => { commitLead(pendingLead); finishCheckin(); });
+$("#skipPrint").addEventListener("click", async () => {
+  if(STATION){
+    const rec = { ...pendingLead, noPrint:true };
+    try{ await postPrint(rec); }catch(e){ enqueue(rec); }
+    finishCheckin();
+  } else { commitLead(pendingLead); finishCheckin(); }
+});
 
 /* ============ presenter / staff nametags ============ */
 const roleChips = $("#roleChips");
@@ -705,7 +747,7 @@ $("#staffBtn").addEventListener("click", e => {
 });
 $("#staffBack").addEventListener("click", () => show("#welcome"));
 
-$("#staffPrint").addEventListener("click", () => {
+$("#staffPrint").addEventListener("click", async () => {
   const name = $("#sName").value.trim();
   const role = staffRole.trim();
   let ok = true;
@@ -713,9 +755,14 @@ $("#staffPrint").addEventListener("click", () => {
   $("#errSRole").textContent = role ? "" : "Pick or type a role."; ok = ok && !!role;
   if(!ok) return;
   pendingStaff = { kind:"staff", ts:new Date().toISOString(), name, role, org:$("#sOrg").value.trim() };
-  renderStaffBadge($("#badgePrint"), pendingStaff);
-  const list = loadStaff(); list.push(pendingStaff); saveStaff(list);
-  window.print();
+  if(STATION){
+    try{ await postPrint(pendingStaff); $("#offline").classList.remove("show"); }
+    catch(e){ enqueue(pendingStaff); $("#offline").classList.add("show"); }
+  } else {
+    renderStaffBadge($("#badgePrint"), pendingStaff);
+    const list = loadStaff(); list.push(pendingStaff); saveStaff(list);
+    window.print();
+  }
   $("#doneName").textContent = `Nametag printed for ${name.split(/\s+/)[0]}!`;
   $("#done").classList.add("show");
   setTimeout(() => { $("#done").classList.remove("show"); resetStaff(); show("#welcome"); }, 3000);
@@ -737,10 +784,10 @@ $$("#adminTabs .tab").forEach(t => t.addEventListener("click", () => renderAdmin
 
 function timeCell(ts){ return new Date(ts).toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}); }
 
-function renderAdmin(view){
+async function renderAdmin(view){
   if(view) adminView = view;
-  const leads = loadLeads();
-  const staff = loadStaff();
+  const leads = STATION ? await fetch("/api/leads").then(r=>r.json()).catch(()=>[]) : loadLeads();
+  const staff = STATION ? await fetch("/api/staff").then(r=>r.json()).catch(()=>[]) : loadStaff();
   $$("#adminTabs .tab").forEach(t => t.classList.toggle("on", t.dataset.view === adminView));
   $("#statCards").innerHTML = `
     <div class="stat"><div class="n">${leads.length}</div><div class="l">Student check-ins</div></div>
@@ -775,7 +822,14 @@ function renderStudentAdmin(leads){
   $("#leadTable").innerHTML = `<table>
     <thead><tr><th>Time</th><th>Name</th><th>Email</th><th>Programs of Interest</th><th></th></tr></thead>
     <tbody>${rows}</tbody></table>`;
-  $("#leadTable").querySelectorAll(".rowbtn").forEach(b => b.addEventListener("click", () => {
+  $("#leadTable").querySelectorAll(".rowbtn").forEach(b => b.addEventListener("click", async () => {
+    if(STATION){
+      const list = await fetch("/api/leads").then(r=>r.json()).catch(()=>[]); const rec = list[+b.dataset.i];
+      if(!rec) return;
+      if(b.dataset.act === "reprint"){ await fetch("/api/reprint",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({kind:"student",id:rec.id})}); }
+      else { toast("Delete a single record on the Mac; use Clear to reset."); }
+      return;
+    }
     const leads = loadLeads(); const i = +b.dataset.i;
     if(b.dataset.act === "reprint"){ paintBadge($("#badgePrint"), leads[i]); window.print(); }
     else { leads.splice(i,1); saveLeads(leads); renderAdmin(); }
@@ -803,7 +857,14 @@ function renderStaffAdmin(staff){
   $("#leadTable").innerHTML = `<table>
     <thead><tr><th>Time</th><th>Name</th><th>Role</th><th>Organization</th><th></th></tr></thead>
     <tbody>${rows}</tbody></table>`;
-  $("#leadTable").querySelectorAll(".rowbtn").forEach(b => b.addEventListener("click", () => {
+  $("#leadTable").querySelectorAll(".rowbtn").forEach(b => b.addEventListener("click", async () => {
+    if(STATION){
+      const list = await fetch("/api/staff").then(r=>r.json()).catch(()=>[]); const rec = list[+b.dataset.i];
+      if(!rec) return;
+      if(b.dataset.act === "reprint"){ await fetch("/api/reprint",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({kind:"staff",id:rec.id})}); }
+      else { toast("Delete a single record on the Mac; use Clear to reset."); }
+      return;
+    }
     const staff = loadStaff(); const i = +b.dataset.i;
     if(b.dataset.act === "reprint"){ paintBadge($("#badgePrint"), staff[i]); window.print(); }
     else { staff.splice(i,1); saveStaff(staff); renderAdmin(); }
@@ -811,6 +872,7 @@ function renderStaffAdmin(staff){
 }
 
 $("#exportCsv").addEventListener("click", () => {
+  if(STATION){ location.href = adminView === "staff" ? "/export/staff.csv" : "/export/leads.csv"; return; }
   const q = v => `"${String(v).replace(/"/g,'""')}"`;
   const stamp = new Date().toISOString().slice(0,10);
   let csv, fname, n, label;
@@ -841,8 +903,9 @@ $("#clearBtn").addEventListener("click", () => {
   $("#confirmClear").classList.add("show");
 });
 $("#clearNo").addEventListener("click", () => $("#confirmClear").classList.remove("show"));
-$("#clearYes").addEventListener("click", () => {
-  localStorage.removeItem(adminView === "staff" ? STAFF_KEY : STORE_KEY);
+$("#clearYes").addEventListener("click", async () => {
+  if(STATION){ await fetch("/api/clear",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({kind: adminView === "staff" ? "staff" : "student"})}); }
+  else { localStorage.removeItem(adminView === "staff" ? STAFF_KEY : STORE_KEY); }
   $("#confirmClear").classList.remove("show");
   renderAdmin();
   toast(adminView === "staff" ? "All staff nametags cleared." : "All student leads cleared.");
@@ -850,6 +913,31 @@ $("#clearYes").addEventListener("click", () => {
 
 /* apply the saved label size on load (sets preview aspect, @page size, hints) */
 applyLabel(curLabel());
+
+/* station mode: detect the Mac server, retry the offline queue periodically */
+async function initStation(){
+  try{
+    const r = await fetch("/api/config", { cache:"no-store" });
+    if(r.ok){
+      STATION = await r.json();
+      if(STATION.labelSize) applyLabel(STATION.labelSize);
+      flushQueue(); setInterval(flushQueue, 15000);
+      window.addEventListener("online", flushQueue);
+    }
+  }catch(e){ STATION = null; }   // standalone (GitHub Pages) — keep window.print + localStorage
+}
+
+/* render mode: the Mac points headless Chrome at /?render=<base64 record>&label=.. */
+const _rp = new URLSearchParams(location.search);
+if(_rp.has("render")){
+  try{
+    const rec = JSON.parse(decodeURIComponent(escape(atob(_rp.get("render")))));
+    if(_rp.get("label")) applyLabel(_rp.get("label"));
+    paintBadge($("#badgePrint"), rec);
+  }catch(e){ /* leave page blank on bad input */ }
+} else {
+  initStation();
+}
 </script>
 </body>
 </html>
