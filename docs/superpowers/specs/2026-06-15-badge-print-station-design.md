@@ -28,11 +28,12 @@ printing. We also want centralized data instead of per-iPad localStorage.
 ## Architecture
 
 **One codebase, two modes.** The Mac serves the *same* `index.html` we already ship.
-The server injects a config flag (`GET /api/config` → `{station:true, printer, labelSize}`).
+On load the page fetches `GET /api/config`; if it responds `200 {station:true, …}` the
+kiosk enters **station mode**, otherwise it stays in **standalone mode**.
 - **Station mode** (served by the Mac): Print → `POST /print`; data read/written via the
   server API.
-- **Standalone mode** (loaded from GitHub Pages, flag absent): current behavior —
-  `window.print` + localStorage. Unchanged.
+- **Standalone mode** (loaded from GitHub Pages — the `/api/config` fetch fails or 404s):
+  current behavior — `window.print` + localStorage. Unchanged.
 
 This keeps a single source of truth for the badge HTML/CSS and the fluid/exact rendering.
 
