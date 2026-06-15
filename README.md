@@ -21,11 +21,15 @@ iPad's print dialog **defaults to "US Letter," which is wrong** — that makes t
 badge print tiny on a big sheet. On the first print:
 
 1. Tap **Printer** and choose your **label printer** (not a regular office printer).
-2. Tap **Paper Size** and choose your **3 × 2 label** media.
+2. Tap **Paper Size** and choose your label media (**3 × 2** or **4 × 2.5**).
 3. Set **Scaling** to **100%** and leave **Orientation** on the landscape option.
 
 iOS remembers these for the rest of the event. The badge is built to fill whatever
 size you pick, so once the label media is selected it fills the label edge to edge.
+
+**Pick the label size in the app too:** open the **⚙** admin panel and set
+**Label size** to **3 × 2 in** or **4 × 2.5 in** to match your stock. This makes the
+on-screen preview match the print and sets the page size correctly.
 
 ## During the event
 

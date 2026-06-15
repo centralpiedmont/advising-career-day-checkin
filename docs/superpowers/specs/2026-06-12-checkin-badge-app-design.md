@@ -72,6 +72,11 @@ name badge via AirPrint to a label printer. Companion to the signage system in
   3×2 label; fills the sheet otherwise). Auto-fit font sizes are in `cqw` too, so a
   fit found in the preview is scale-invariant and correct on the printed label.
   Both print screens show a hint to pick the label printer + paper size (Scaling 100%).
+- **Label size selector** (added 2026-06-15): admin panel has a 3 × 2 / 4 × 2.5 toggle
+  (persisted in `acd-label-2026`). It sets the preview `aspect-ratio` (via a
+  `--badge-ar` CSS var), rewrites the print `@page{size}` through a dedicated
+  `#pageStyle` element, and updates the print hints. The fluid badge fills either
+  size; the 4 × 2.5's slightly taller ratio is absorbed by the centered main area.
 
 ## Data model
 
