@@ -824,7 +824,8 @@ async function renderAndPrint(rec) {
   const b64 = Buffer.from(JSON.stringify(rec)).toString("base64");
   const url = `http://127.0.0.1:${PORT}/?render=${encodeURIComponent(b64)}&label=${label}`;
   const pdf = await render.renderToPdf(url);
-  try { await printer.print(cfg.printer, pdf, label); }
+  const opts = { printSpeed: cfg.printSpeed, darkness: cfg.darkness, mediaMethod: cfg.mediaMethod };
+  try { await printer.print(cfg.printer, pdf, label, opts); }
   finally { try { fs.unlinkSync(pdf); } catch (e) {} }
 }
 
