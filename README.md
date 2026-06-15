@@ -22,12 +22,21 @@ Students tap **Check In**, enter name + email, tap program chips, and print.
 Badges are monochrome (white label stock) with the student's name and top
 program interests.
 
+## Presenter / staff nametags
+
+On the welcome screen, tap **★ Presenter / Staff nametag** (below the big Check-In
+button). Enter a name, an optional organization, and pick a role — Presenter, Staff,
+Volunteer, Employer, Faculty, or **Other** to type your own (e.g. "Keynote Speaker").
+A live preview updates as you type; tap **Print Nametag**. These print on the same
+3×2 labels and are logged separately from student leads.
+
 ## After the event (get the leads)
 
 1. On the welcome screen, tap the small **⚙** in the bottom-right corner.
-2. Review check-ins and per-program counts, then tap **Export CSV** —
-   the file lands in **Files → Downloads**; AirDrop or email it to yourself.
-3. Optionally **Clear all data** once the CSV is safely off the iPad.
+2. Use the **Students / Presenters & Staff** toggle to pick a list. Review the
+   counts, then tap **Export CSV** — the file lands in **Files → Downloads**;
+   AirDrop or email it to yourself. (Export each list separately.)
+3. Optionally **Clear this list** once the CSV is safely off the iPad.
 
 ⚠️ Leads live in Safari's local storage for this site on this iPad. Don't clear
 Safari website data before exporting, and export from **each** iPad if you run
@@ -35,7 +44,7 @@ several check-in stations.
 
 ## Editing
 
-Everything is in `index.html` — the program chip list is the `TRACKS` array at the
-top of the `<script>` block. Design spec:
+Everything is in `index.html` — the program chip list is the `TRACKS` array and the
+staff roles are the `ROLES` array at the top of the `<script>` block. Design spec:
 `docs/superpowers/specs/2026-06-12-checkin-badge-app-design.md`.
 Companion signage system: `../AdvisingAndCareerDay/` (same track colors).

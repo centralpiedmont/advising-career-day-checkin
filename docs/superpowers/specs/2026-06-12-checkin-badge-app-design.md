@@ -38,9 +38,16 @@ name badge via AirPrint to a label printer. Companion to the signage system in
 3. **Preview & Print** — live 3×2 badge preview, **Print Badge** button triggers
    `window.print()`, lead is saved on print (or via a "Save without printing" link).
    After printing, auto-return to Welcome (with a short "Checked in!" confirmation).
-4. **Admin** (gear icon on Welcome, small/discreet) — lead table (timestamp, name,
-   email, interests), per-program counts, Export CSV, reprint badge for a lead,
-   Clear all data (confirm step).
+4. **Presenter / Staff nametag** (added 2026-06-15) — reached via a secondary
+   "★ Presenter / Staff nametag" button on Welcome. Single screen: Name (required),
+   Organization (optional), Role (single-select chips — Presenter, Staff, Volunteer,
+   Employer, Faculty — plus "Other" revealing a free-text custom role), with a live
+   badge preview beside the form. Print Nametag saves to a separate store and prints.
+5. **Admin** (gear icon on Welcome, small/discreet) — two stat cards (student
+   check-ins, presenters & staff) and a **Students / Presenters & Staff** tab toggle.
+   Students view: per-program counts + leads table. Staff view: nametag table
+   (time, name, role, organization). Each view has a contextual Export CSV, per-row
+   reprint/delete, and a "Clear this list" (confirm step) scoped to the active view.
 
 ## Badge (3 × 2 in landscape)
 
@@ -53,15 +60,22 @@ name badge via AirPrint to a label printer. Companion to the signage system in
 - Official horizontal logo (reversed white, inlined as a data URI) in the header
   band, since blank label stock carries no branding (revised 2026-06-12).
   Font stack: "Franklin Gothic", Arial, Roboto, sans-serif per brand.
+- **Staff/presenter variant** (added 2026-06-15): same band; main area shows a bold
+  uppercase **role** line, the large name, then the **organization** as the footer
+  line (footer omitted when no org). Same width/height auto-fitting as student badges.
 
 ## Data model
 
 ```js
-// localStorage key: "acd-leads-2026"
+// localStorage key: "acd-leads-2026"  (students)
 [{ ts: "2026-06-12T10:42:00", name, email, programs: ["Cybersecurity", ...] }]
+
+// localStorage key: "acd-staff-2026"  (presenters/staff; kept separate)
+[{ kind: "staff", ts, name, role: "Faculty", org: "Central Piedmont" }]
 ```
 
-CSV columns: `Timestamp,Name,Email,Programs` (programs joined with `; `).
+CSV columns — Students: `Timestamp,Name,Email,Programs` (programs joined `; `).
+Staff: `Timestamp,Name,Role,Organization`.
 
 ## Error handling
 
