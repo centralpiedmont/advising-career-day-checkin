@@ -582,7 +582,7 @@ function renderBadge(el, lead){
   const parts = lead.name.trim().split(/\s+/);
   const first = parts[0] || "";
   const rest  = parts.slice(1).join(" ");
-  const ints  = lead.programs.map(esc).join("&nbsp;· ");
+  const ints  = (lead.programs||[]).map(esc).join("&nbsp;· ");
   el.innerHTML = `
     <div class="b-band">
       <img class="b-logo" src="${LOGO}" alt="Central Piedmont">
@@ -799,7 +799,7 @@ async function renderAdmin(view){
 
 function renderStudentAdmin(leads){
   const counts = {};
-  leads.forEach(l => l.programs.forEach(p => counts[p] = (counts[p]||0)+1));
+  leads.forEach(l => (l.programs||[]).forEach(p => counts[p] = (counts[p]||0)+1));
   $("#progCounts").style.display = "";
   $("#progCounts").innerHTML = Object.entries(counts).sort((a,b)=>b[1]-a[1])
     .map(([p,c]) => `<span class="tag">${esc(p)} <span class="ct">${c}</span></span>`).join("");
@@ -813,7 +813,7 @@ function renderStudentAdmin(leads){
       <td class="mono">${timeCell(l.ts)}</td>
       <td><strong>${esc(l.name)}</strong></td>
       <td>${esc(l.email)}</td>
-      <td>${l.programs.map(esc).join(", ")}</td>
+      <td>${(l.programs||[]).map(esc).join(", ")}</td>
       <td style="white-space:nowrap">
         <button class="rowbtn print" data-i="${i}" data-act="reprint">Reprint</button>
         <button class="rowbtn del" data-i="${i}" data-act="del">Delete</button>
@@ -884,7 +884,7 @@ $("#exportCsv").addEventListener("click", () => {
   } else {
     const leads = loadLeads();
     csv = "Timestamp,Name,Email,Programs\n" +
-      leads.map(l => [q(l.ts), q(l.name), q(l.email), q(l.programs.join("; "))].join(",")).join("\n");
+      leads.map(l => [q(l.ts), q(l.name), q(l.email), q((l.programs||[]).join("; "))].join(",")).join("\n");
     fname = `advising-career-day-leads-${stamp}.csv`; n = leads.length; label = "lead";
   }
   const blob = new Blob([csv], {type:"text/csv"});
