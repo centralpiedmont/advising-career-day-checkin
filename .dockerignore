@@ -1,0 +1,7 @@
+.git
+docs
+qa-*
+**/data
+**/*.pdf
+**/*.tmp
+.DS_Store

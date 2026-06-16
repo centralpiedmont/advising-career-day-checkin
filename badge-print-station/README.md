@@ -37,3 +37,8 @@ Mac (one file for all iPads). `data/leads.json` and `data/staff.json` hold the r
 
 ## Tests
 `npm test` (needs Chrome + `pdfinfo`).
+
+## Run it on a Raspberry Pi 400 (Balena)
+To run the kiosk as a self-contained appliance — a Pi 400 with a touchscreen
+showing the kiosk full-screen, badges over USB, OTA updates — see
+[`BALENA.md`](BALENA.md).
