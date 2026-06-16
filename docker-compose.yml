@@ -1,0 +1,59 @@
+# Balena multi-container app for the Advising & Career Day check-in kiosk.
+# Deploy to a Raspberry Pi 400 (device type: Raspberry Pi 4 / 64-bit) via
+# balenaCloud. See badge-print-station/BALENA.md for the full setup walkthrough.
+version: "2.1"
+
+volumes:
+  # Survives OTA updates — leads.json / staff.json live here, NOT in a layer.
+  badge-data: {}
+
+services:
+  # The Node app: serves the kiosk on :8088 and prints each check-in.
+  kiosk-server:
+    build:
+      context: .
+      dockerfile: badge-print-station/Dockerfile
+    restart: always
+    expose:
+      - "8088"
+    ports:
+      - "8088:8088"      # also reachable on the device LAN (e.g. for iPads)
+    volumes:
+      - badge-data:/data
+    environment:
+      PORT: "8088"
+      DATA_DIR: "/data"
+      CHROME_PATH: "/usr/bin/chromium"
+      CHROME_FLAGS: "--no-sandbox --disable-dev-shm-usage"
+      CUPS_SERVER: "cups:631"   # lp in this container prints to the cups service
+
+  # Full-screen Chromium on the attached (touch)screen — replaces the iPad.
+  # balenablocks/browser auto-selects the device architecture.
+  browser:
+    image: bh.cr/balenablocks/browser
+    privileged: true
+    network_mode: host
+    restart: always
+    environment:
+      LAUNCH_URL: "http://localhost:8088"
+      KIOSK: "1"
+      PERSISTENT: "1"
+    labels:
+      io.balena.features.dbus: "1"
+
+  # CUPS print server with USB access to the label printer.
+  cups:
+    build:
+      context: ./cups
+    privileged: true          # needed to reach the USB printer on the host
+    restart: always
+    expose:
+      - "631"
+    ports:
+      - "631:631"             # web UI for one-time driver setup
+    environment:
+      PRINTER_NAME: "4BARCODE_4B_2054N"
+      # Fill these in (see cups/entrypoint.sh) to auto-create the queue:
+      PRINTER_URI: ""
+      PRINTER_MODEL: ""
+      # PRINTER_PPD: "/path/to/driver.ppd"

@@ -1,0 +1,11 @@
+name: advising-career-day-checkin
+type: sw.application
+description: >-
+  Self-contained check-in & badge kiosk for the Business & Technology Advising
+  and Career Day. Runs the kiosk full-screen on an attached touchscreen and
+  prints 3x2 in name badges to a USB label printer.
+joinable: false
+post-provisioning: >-
+  Open the device's CUPS web UI at http://<device-ip>:631 to confirm the label
+  printer queue, or set PRINTER_URI / PRINTER_MODEL service variables on the
+  cups service to auto-create it. See badge-print-station/BALENA.md.

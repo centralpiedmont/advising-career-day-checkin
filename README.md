@@ -69,3 +69,8 @@ For printers without AirPrint (e.g. the 4Barcode 4B-2054N), run the **Badge Prin
 Station** in [`badge-print-station/`](badge-print-station/): the Mac serves this same
 kiosk to the iPad and prints badges silently over USB. Clone this repo, then
 `cd badge-print-station && npm start`. See its README for setup.
+
+## Running as a standalone Pi kiosk (Balena)
+To run the whole thing on a **Raspberry Pi 400** with a touchscreen as a
+self-contained kiosk (no iPad, no Mac) — containerized and deployed over-the-air
+with balenaCloud — see [`badge-print-station/BALENA.md`](badge-print-station/BALENA.md).
